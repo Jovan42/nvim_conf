@@ -6,6 +6,12 @@ local plugins = {
         opts = {
             ensure_installed = {
                 "rust-analyzer",
+                "stylua",
+                "black",
+                "prettier",
+                "gopls",
+                "lua-language-server",
+                "terraform-ls",
             },
         },
     },
@@ -13,25 +19,72 @@ local plugins = {
         "neovim/nvim-lspconfig",
         config = function()
             require "plugins.configs.lspconfig"
-            require "custom.configs.lspconfig"
         end,
     },
     {
-        "simrat39/rust-tools.nvim",
+        "mrcjkb/rustaceanvim",
+        version = "^5",
+        lazy = false,
         ft = "rust",
-        dependencies = "neovim/nvim-lspconfig",
-        opts = function()
-            return require "custom.configs.rust-tools"
+        dependencies = { "neovim/nvim-lspconfig" },
+        config = function()
+            -- Get on_attach and capabilities after lspconfig is loaded
+            local on_attach = function(client, bufnr)
+                local utils = require "core.utils"
+                utils.load_mappings("lspconfig", { buffer = bufnr })
+
+                if client.server_capabilities.signatureHelpProvider then
+                    require("nvchad.signature").setup(client)
+                end
+
+                if not utils.load_config().ui.lsp_semantic_tokens and client.supports_method "textDocument/semanticTokens" then
+                    client.server_capabilities.semanticTokensProvider = nil
+                end
+            end
+
+            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+            vim.g.rustaceanvim = {
+                server = {
+                    on_attach = on_attach,
+                    capabilities = capabilities,
+                    default_settings = {
+                        ['rust-analyzer'] = {},
+                    },
+                },
+            }
         end,
-        config = function(_, opts)
-            require('rust-tools').setup(opts)
-        end
     },
     {
         "mfussenegger/nvim-dap",
         init = function()
             require("core.utils").load_mappings("dap")
         end
+    },
+    {
+        "rcarriga/nvim-dap-ui",
+        dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"},
+        config = function()
+            require("dapui").setup()
+            local dap, dapui = require("dap"), require("dapui")
+            dap.listeners.after.event_initialized["dapui_config"] = function()
+                dapui.open()
+            end
+            dap.listeners.before.event_terminated["dapui_config"] = function()
+                dapui.close()
+            end
+            dap.listeners.before.event_exited["dapui_config"] = function()
+                dapui.close()
+            end
+        end,
+    },
+    {
+        "leoluz/nvim-dap-go",
+        dependencies = "mfussenegger/nvim-dap",
+        ft = "go",
+        config = function()
+            require("dap-go").setup()
+        end,
     },
     {
         'saecki/crates.nvim',
@@ -77,7 +130,7 @@ local plugins = {
         'kristijanhusak/vim-dadbod-ui',
         dependencies = {
             { 'tpope/vim-dadbod',                     lazy = true },
-            { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
+            { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql', 'pgsql' }, lazy = true },
         },
         cmd = {
             'DBUI',
@@ -88,6 +141,124 @@ local plugins = {
         init = function()
             -- Your DBUI configuration
             vim.g.db_ui_use_nerd_fonts = 1
+        end,
+    },
+    {
+        "nvim-telescope/telescope.nvim",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "debugloop/telescope-undo.nvim",
+        },
+        config = function()
+            require("telescope").setup({
+                -- the rest of your telescope config goes here
+                extensions = {
+                    undo = {
+                        -- telescope-undo.nvim config, see below
+                    },
+                    -- other extensions:
+                    -- file_browser = { ... }
+                },
+            })
+            require("telescope").load_extension("undo")
+            -- optional: vim.keymap.set("n", "<leader>u", "<cmd>Telescope undo<cr>")
+        end,
+    },
+    {
+        "ray-x/go.nvim",
+        dependencies = { -- optional packages
+            "ray-x/guihua.lua",
+            "neovim/nvim-lspconfig",
+            "nvim-treesitter/nvim-treesitter",
+        },
+        config = function()
+            require("go").setup()
+        end,
+        event = { "CmdlineEnter" },
+        ft = { "go", 'gomod' },
+        build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    },
+    {
+        'MeanderingProgrammer/markdown.nvim',
+        name = 'render-markdown',              -- Only needed if you have another plugin named markdown.nvim
+        dependencies = {
+            'nvim-treesitter/nvim-treesitter', -- Mandatory
+            'nvim-tree/nvim-web-devicons',     -- Optional but recommended
+        },
+        config = function()
+            require('render-markdown').setup({
+                file_types = { 'markdown' },
+            })
+        end,
+    },
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        ft = { "markdown" },
+        build = function() vim.fn["mkdp#util#install"]() end,
+    },
+    {
+        "FabijanZulj/blame.nvim",
+        config = function()
+            require("blame").setup({})
+        end
+    },
+    {
+        "stevearc/conform.nvim",
+        event = "BufWritePre",
+        config = function()
+            require("conform").setup({
+                formatters_by_ft = {
+                    lua = { "stylua" },
+                    rust = { "rustfmt" },
+                    go = { "gofmt", "goimports" },
+                    python = { "black" },
+                    javascript = { "prettier" },
+                    typescript = { "prettier" },
+                    json = { "prettier" },
+                    yaml = { "prettier" },
+                    markdown = { "prettier" },
+                },
+                format_on_save = {
+                    timeout_ms = 500,
+                    lsp_fallback = true,
+                },
+            })
+        end,
+    },
+    {
+        "folke/trouble.nvim",
+        cmd = "Trouble",
+        keys = {
+            { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics" },
+            { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics" },
+            { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List" },
+            { "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location List" },
+        },
+        opts = {},
+    },
+    {
+        "folke/todo-comments.nvim",
+        dependencies = "nvim-lua/plenary.nvim",
+        event = "BufRead",
+        config = function()
+            require("todo-comments").setup()
+        end,
+    },
+    {
+        "akinsho/toggleterm.nvim",
+        version = "*",
+        keys = {
+            { [[<c-\>]], desc = "Toggle terminal" },
+        },
+        config = function()
+            require("toggleterm").setup({
+                open_mapping = [[<c-\>]],
+                direction = "float",
+                float_opts = {
+                    border = "curved",
+                },
+            })
         end,
     }
 }

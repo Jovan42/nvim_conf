@@ -18,30 +18,15 @@ M.on_attach = function(client, bufnr)
     end
 end
 
-M.capabilities = vim.lsp.protocol.make_client_capabilities()
+M.capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-M.capabilities.textDocument.completion.completionItem = {
-    documentationFormat = { "markdown", "plaintext" },
-    snippetSupport = true,
-    preselectSupport = true,
-    insertReplaceSupport = true,
-    labelDetailsSupport = true,
-    deprecatedSupport = true,
-    commitCharactersSupport = true,
-    tagSupport = { valueSet = { 1 } },
-    resolveSupport = {
-        properties = {
-            "documentation",
-            "detail",
-            "additionalTextEdits",
-        },
-    },
-}
-
-require("lspconfig").lua_ls.setup {
+-- Configure lua_ls using new vim.lsp.config API
+vim.lsp.config('lua_ls', {
+    cmd = { 'lua-language-server' },
+    root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
+    filetypes = { 'lua' },
     on_attach = M.on_attach,
     capabilities = M.capabilities,
-
     settings = {
         Lua = {
             diagnostics = {
@@ -59,6 +44,43 @@ require("lspconfig").lua_ls.setup {
             },
         },
     },
-}
+})
 
+-- Configure gopls using new vim.lsp.config API
+vim.lsp.config('gopls', {
+    cmd = { 'gopls' },
+    root_markers = { 'go.work', 'go.mod', '.git' },
+    filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+    on_attach = M.on_attach,
+    capabilities = M.capabilities,
+    settings = {
+        gopls = {
+            completeUnimported = true,
+            usePlaceholders = true,
+            analyses = {
+                unusedparam = true,
+            }
+        }
+    }
+})
+
+-- Configure terraform-ls using new vim.lsp.config API
+vim.lsp.config('terraformls', {
+    cmd = { 'terraform-ls', 'serve' },
+    root_markers = { '.terraform', '.git' },
+    filetypes = { 'terraform', 'tf' },
+    on_attach = M.on_attach,
+    capabilities = M.capabilities,
+})
+
+-- Enable the LSP servers
+vim.lsp.enable('lua_ls')
+vim.lsp.enable('gopls')
+vim.lsp.enable('terraformls')
+
+vim.filetype.add({
+  extension = {
+    tf = "terraform"
+  }
+})
 return M
