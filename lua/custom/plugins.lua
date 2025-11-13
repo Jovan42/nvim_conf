@@ -180,14 +180,33 @@ local plugins = {
     },
     {
         'MeanderingProgrammer/markdown.nvim',
-        name = 'render-markdown',              -- Only needed if you have another plugin named markdown.nvim
+        name = 'render-markdown',
         dependencies = {
-            'nvim-treesitter/nvim-treesitter', -- Mandatory
-            'nvim-tree/nvim-web-devicons',     -- Optional but recommended
+            'nvim-treesitter/nvim-treesitter',
+            'nvim-tree/nvim-web-devicons',
         },
+        ft = { 'markdown' },
         config = function()
             require('render-markdown').setup({
+                enabled = true,
                 file_types = { 'markdown' },
+                heading = {
+                    -- Turn on heading icon & background highlights
+                    enabled = true,
+                    sign = true,
+                    icons = { '󰲡 ', '󰲣 ', '󰲥 ', '󰲧 ', '󰲩 ', '󰲫 ' },
+                },
+                code = {
+                    -- Turn on code block background highlighting
+                    enabled = true,
+                    sign = true,
+                    style = 'full',
+                    width = 'block',
+                },
+                bullet = {
+                    enabled = true,
+                    icons = { '●', '○', '◆', '◇' },
+                },
             })
         end,
     },

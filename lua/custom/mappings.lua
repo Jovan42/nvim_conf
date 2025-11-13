@@ -67,6 +67,12 @@ M.custom = {
                 require('conform').format()
             end,
             "Format buffer"
+        },
+
+        -- Toggle markdown rendering
+        ["<leader>mr"] = {
+            "<cmd>RenderMarkdown toggle<CR>",
+            "Toggle markdown rendering"
         }
     }
 }
