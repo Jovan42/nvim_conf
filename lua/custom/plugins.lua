@@ -6,6 +6,7 @@ local plugins = {
         opts = {
             ensure_installed = {
                 "rust-analyzer",
+                "jdtls",
                 "stylua",
                 "black",
                 "prettier",
@@ -14,6 +15,10 @@ local plugins = {
                 "terraform-ls",
             },
         },
+    },
+    {
+        "mfussenegger/nvim-jdtls",
+        ft = "java",
     },
     {
         "neovim/nvim-lspconfig",
@@ -28,7 +33,6 @@ local plugins = {
         ft = "rust",
         dependencies = { "neovim/nvim-lspconfig" },
         config = function()
-            -- Get on_attach and capabilities after lspconfig is loaded
             local on_attach = function(client, bufnr)
                 local utils = require "core.utils"
                 utils.load_mappings("lspconfig", { buffer = bufnr })
@@ -139,7 +143,6 @@ local plugins = {
             'DBUIFindBuffer',
         },
         init = function()
-            -- Your DBUI configuration
             vim.g.db_ui_use_nerd_fonts = 1
         end,
     },
@@ -151,22 +154,16 @@ local plugins = {
         },
         config = function()
             require("telescope").setup({
-                -- the rest of your telescope config goes here
                 extensions = {
-                    undo = {
-                        -- telescope-undo.nvim config, see below
-                    },
-                    -- other extensions:
-                    -- file_browser = { ... }
+                    undo = {},
                 },
             })
             require("telescope").load_extension("undo")
-            -- optional: vim.keymap.set("n", "<leader>u", "<cmd>Telescope undo<cr>")
         end,
     },
     {
         "ray-x/go.nvim",
-        dependencies = { -- optional packages
+        dependencies = {
             "ray-x/guihua.lua",
             "neovim/nvim-lspconfig",
             "nvim-treesitter/nvim-treesitter",
@@ -176,7 +173,7 @@ local plugins = {
         end,
         event = { "CmdlineEnter" },
         ft = { "go", 'gomod' },
-        build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+        build = ':lua require("go.install").update_all_sync()'
     },
     {
         'MeanderingProgrammer/markdown.nvim',
@@ -191,13 +188,11 @@ local plugins = {
                 enabled = true,
                 file_types = { 'markdown' },
                 heading = {
-                    -- Turn on heading icon & background highlights
                     enabled = true,
                     sign = true,
                     icons = { '󰲡 ', '󰲣 ', '󰲥 ', '󰲧 ', '󰲩 ', '󰲫 ' },
                 },
                 code = {
-                    -- Turn on code block background highlighting
                     enabled = true,
                     sign = true,
                     style = 'full',
@@ -249,10 +244,10 @@ local plugins = {
         "folke/trouble.nvim",
         cmd = "Trouble",
         keys = {
-            { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics" },
+            { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>",              desc = "Diagnostics" },
             { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics" },
-            { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List" },
-            { "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location List" },
+            { "<leader>xq", "<cmd>Trouble qflist toggle<cr>",                   desc = "Quickfix List" },
+            { "<leader>xl", "<cmd>Trouble loclist toggle<cr>",                  desc = "Location List" },
         },
         opts = {},
     },
@@ -279,6 +274,17 @@ local plugins = {
                 },
             })
         end,
-    }
+    },
+    {
+        "kdheepak/lazygit.nvim",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        cmd = "LazyGit",
+        keys = {
+            { "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
+        },
+        config = function()
+            vim.g.lazygit_floating_window_scaling_factor = 0.9
+        end,
+    },
 }
 return plugins

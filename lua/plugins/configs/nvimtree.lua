@@ -19,8 +19,8 @@ local options = {
         preserve_window_proportions = true,
     },
     git = {
-        enable = false,
-        ignore = true,
+        enable = true,
+        ignore = false,
     },
     filesystem_watchers = {
         enable = true,
@@ -32,7 +32,7 @@ local options = {
     },
     renderer = {
         root_folder_label = false,
-        highlight_git = false,
+        highlight_git = true,
         highlight_opened_files = "none",
 
         indent_markers = {
@@ -44,29 +44,29 @@ local options = {
                 file = true,
                 folder = true,
                 folder_arrow = true,
-                git = false,
+                git = true,
             },
 
             glyphs = {
                 default = "󰈚",
-                symlink = "",
+                symlink = "",
                 folder = {
-                    default = "",
-                    empty = "",
-                    empty_open = "",
-                    open = "",
-                    symlink = "",
-                    symlink_open = "",
-                    arrow_open = "",
-                    arrow_closed = "",
+                    default = "",
+                    empty = "",
+                    empty_open = "",
+                    open = "",
+                    symlink = "",
+                    symlink_open = "",
+                    arrow_open = "",
+                    arrow_closed = "",
                 },
                 git = {
                     unstaged = "✗",
                     staged = "✓",
-                    unmerged = "",
+                    unmerged = "",
                     renamed = "➜",
                     untracked = "★",
-                    deleted = "",
+                    deleted = "",
                     ignored = "◌",
                 },
             },

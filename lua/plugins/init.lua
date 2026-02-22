@@ -269,6 +269,11 @@ local default_plugins = {
             require("which-key").setup(opts)
         end,
     },
+    {
+        "ellisonleao/glow.nvim",
+        config = true,
+        cmd = "Glow",
+    },
 }
 
 local config = require("core.utils").load_config()

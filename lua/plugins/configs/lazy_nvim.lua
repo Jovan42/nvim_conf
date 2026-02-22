@@ -4,10 +4,10 @@ return {
 
     ui = {
         icons = {
-            ft = "",
+            ft = "",
             lazy = "󰂠 ",
-            loaded = "",
-            not_loaded = "",
+            loaded = "",
+            not_loaded = "",
         },
     },
 
@@ -40,7 +40,6 @@ return {
                 "optwin",
                 "compiler",
                 "bugreport",
-                "ftplugin",
             },
         },
     },
